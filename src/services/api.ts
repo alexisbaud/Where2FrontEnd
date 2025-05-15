@@ -23,7 +23,14 @@ export const suggestActivities = async (preferences: {
       lng: 2.3522
     };
 
-    const response = await fetch(`${API_URL}/mock-delay`, {
+    // Convertir le booléen sameActivityType en valeur d'énumération
+    const sameTypeValue = preferences.sameActivityType === true 
+      ? 'yes' 
+      : preferences.sameActivityType === false 
+        ? 'no' 
+        : 'indifferent';
+
+    const response = await fetch(`${API_URL}/suggest-o3`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -31,7 +38,7 @@ export const suggestActivities = async (preferences: {
       body: JSON.stringify({
         answers: {
           canceled_activity: preferences.canceledActivity,
-          same_type: preferences.sameActivityType,
+          same_type: sameTypeValue,
           budget: preferences.budget,
           travel_time: preferences.transportTime,
           energy_level: energyLevelAdjusted,
@@ -79,7 +86,14 @@ export const suggestRefinedActivities = async (preferences: {
       lng: 2.3522
     };
 
-    const response = await fetch(`${API_URL}/mock-delay`, {
+    // Convertir le booléen sameActivityType en valeur d'énumération
+    const sameTypeValue = preferences.sameActivityType === true 
+      ? 'yes' 
+      : preferences.sameActivityType === false 
+        ? 'no' 
+        : 'indifferent';
+
+    const response = await fetch(`${API_URL}/suggest-o3`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -87,19 +101,19 @@ export const suggestRefinedActivities = async (preferences: {
       body: JSON.stringify({
         answers: {
           canceled_activity: preferences.canceledActivity,
-          same_type: preferences.sameActivityType,
+          same_type: sameTypeValue,
           budget: preferences.budget,
           travel_time: preferences.transportTime,
           energy_level: energyLevelAdjusted,
           // Paramètres supplémentaires de raffinement
-          num_participants: preferences.numberOfParticipants,
-          environment: preferences.environmentPreference,
-          experience_type: preferences.experienceType,
-          event_permanence: preferences.eventPermanence,
-          is_refined_search: true // Indicateur pour l'API
+          participants_count: preferences.numberOfParticipants,
+          indoor_preference: preferences.environmentPreference,
+          authentic_preference: preferences.experienceType,
+          temporary_preference: preferences.eventPermanence,
         },
         location: userLocation,
         datetime: new Date().toISOString(),
+        refine: true // Indicateur pour l'API que c'est une requête de raffinement
       }),
     });
 

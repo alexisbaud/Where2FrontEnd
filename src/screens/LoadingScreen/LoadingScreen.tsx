@@ -13,7 +13,7 @@ import Mascot from '../../components/Mascot';
 import colors from '../../styles/colors';
 import spacing from '../../styles/spacing';
 import typography from '../../styles/typography';
-import { RootStackParamList } from '../../navigation/types';
+import { RootStackParamList, EnumTriState } from '../../navigation/types';
 import { suggestActivities } from '../../services/api';
 
 type LoadingScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Loading'>;
@@ -31,6 +31,9 @@ const LoadingScreen: React.FC = () => {
     // Fonction pour appeler l'API et naviguer vers l'écran suivant
     const fetchSuggestions = async () => {
       try {
+        // Convertir le booléen en valeur d'énumération
+        const sameType = sameActivityType === true ? 'yes' : 'no';
+        
         // Appel API
         const result = await suggestActivities({
           canceledActivity,
@@ -81,17 +84,16 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: spacing.screenPadding,
   },
   mascotContainer: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
+    marginBottom: spacing.xxl,
   },
   loadingTextContainer: {
+    marginTop: spacing.xl,
     alignItems: 'center',
-    marginBottom: spacing.xl,
   },
   loadingText: {
     ...typography.h3,
@@ -106,7 +108,7 @@ const styles = StyleSheet.create({
   },
   spinner: {
     marginTop: spacing.xl,
-  }
+  },
 });
 
 export default LoadingScreen; 

@@ -13,7 +13,7 @@ import Mascot from '../../components/Mascot';
 import colors from '../../styles/colors';
 import spacing from '../../styles/spacing';
 import typography from '../../styles/typography';
-import { RootStackParamList } from '../../navigation/types';
+import { RootStackParamList, EnumTriState } from '../../navigation/types';
 import { suggestRefinedActivities } from '../../services/api';
 
 type RefinementLoadingScreenNavigationProp = StackNavigationProp<RootStackParamList, 'RefinementLoading'>;
@@ -41,6 +41,9 @@ const RefinementLoadingScreen: React.FC = () => {
     // Fonction pour appeler l'API et naviguer vers l'écran suivant
     const fetchRefinedSuggestions = async () => {
       try {
+        // Convertir le booléen en valeur d'énumération
+        const sameType = sameActivityType === true ? 'yes' : 'no';
+        
         // Pour le moment, nous utilisons la même fonction API mais avec plus de paramètres
         // Dans une implémentation réelle, il pourrait y avoir une fonction dédiée
         const result = await suggestRefinedActivities({
@@ -108,17 +111,16 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: spacing.screenPadding,
   },
   mascotContainer: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
+    marginBottom: spacing.xxl,
   },
   loadingTextContainer: {
+    marginTop: spacing.xl,
     alignItems: 'center',
-    marginBottom: spacing.xl,
   },
   loadingText: {
     ...typography.h3,
@@ -133,7 +135,7 @@ const styles = StyleSheet.create({
   },
   spinner: {
     marginTop: spacing.xl,
-  }
+  },
 });
 
 export default RefinementLoadingScreen; 

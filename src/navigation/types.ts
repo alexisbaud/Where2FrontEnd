@@ -86,4 +86,6 @@ export interface ApiResponse {
   activities: Activity[];
   note: number;
   note_reasons: string;
-} 
+}
+
+export type EnumTriState = 'yes' | 'no' | 'indifferent'; 

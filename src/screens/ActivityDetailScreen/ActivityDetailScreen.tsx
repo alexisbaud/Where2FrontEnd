@@ -51,6 +51,9 @@ const ActivityDetailScreen: React.FC = () => {
   const { activity } = route.params;
   const [imageLoadingError, setImageLoadingError] = useState(false);
 
+  // Convertir le temps de trajet de secondes en minutes
+  const travelTimeInMinutes = Math.round(activity.estimated_travel_time / 60);
+
   // Réinitialiser l'erreur de chargement lorsque l'écran devient focus
   useFocusEffect(
     useCallback(() => {
@@ -94,6 +97,15 @@ const ActivityDetailScreen: React.FC = () => {
 
   const handleMainImageError = () => {
     console.log('[ActivityDetailScreen] handleMainImageError called. Setting imageLoadingError to true.'); // Log dans handleMainImageError
+    
+    // Vérifier si l'URL est de Google Maps
+    const isGoogleMapsUrl = activity.image_url?.includes('maps.googleapis.com');
+    if (isGoogleMapsUrl) {
+      console.log('[ActivityDetailScreen] Google Maps URL detected, ignoring error');
+      // Ne pas marquer comme erreur pour les URLs Google Maps
+      return;
+    }
+    
     setImageLoadingError(true);
   };
 
@@ -222,7 +234,8 @@ const ActivityDetailScreen: React.FC = () => {
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.imageOuterContainer}>
           <Image 
-            source={activity.image_url && !imageLoadingError ? { uri: activity.image_url } : placeholderImage}
+            source={activity.image_url && (!imageLoadingError || activity.image_url.includes('maps.googleapis.com')) ? 
+              { uri: activity.image_url } : placeholderImage}
             style={styles.activityImage}
             onError={handleMainImageError}
             resizeMode="cover" // Assurons-nous que resizeMode est bien là
@@ -295,7 +308,7 @@ const ActivityDetailScreen: React.FC = () => {
               style={styles.bottomBarTransportIcon}
             />
             <Text style={styles.bottomBarTravelText}>
-              {activity.estimated_travel_time} min
+              {travelTimeInMinutes} min
             </Text>
           </View>
         </View>

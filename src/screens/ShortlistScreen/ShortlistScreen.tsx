@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { 
   View, 
   Text, 
@@ -32,20 +32,166 @@ type ShortlistScreenRouteProp = RouteProp<RootStackParamList, 'Shortlist'>;
 const { width } = Dimensions.get('window');
 const cardWidth = width - 40; // Légère marge des deux côtés
 
+// --- Fonctions utilitaires déplacées hors du composant principal pour être passées en props ---
+const formatPrice = (price: number, isFree: boolean) => {
+  if (isFree) return 'Gratuit';
+  if (price === 0) return 'Gratuit';
+  return `${price}€`;
+};
+
+const formatDuration = (min: number, max: number) => {
+  if (min === max) {
+    if (min >= 60) {
+      const hours = Math.floor(min / 60);
+      const remainingMins = min % 60;
+      if (remainingMins === 0) {
+        return `${hours}h`;
+      }
+      return `${hours}h${remainingMins}`;
+    }
+    return `${min} min`;
+  }
+  if (min >= 60 || max >= 60) {
+    const minHours = Math.floor(min / 60);
+    const minRemaining = min % 60;
+    const maxHours = Math.floor(max / 60);
+    const maxRemaining = max % 60;
+    if (minHours === 0) {
+      return `${min}min - ${maxHours}h${maxRemaining > 0 ? maxRemaining : ''}`;
+    } else if (maxHours === 0) {
+      return `${minHours}h${minRemaining > 0 ? minRemaining : ''} - ${max}min`;
+    } else {
+      return `${minHours}h${minRemaining > 0 ? minRemaining : ''} - ${maxHours}h${maxRemaining > 0 ? maxRemaining : ''}`;
+    }
+  }
+  return `${min} - ${max} min`;
+};
+
+const getTransportIcon = (travelType: number) => {
+  switch(travelType) {
+    case 1: return walkIcon;
+    case 2: return transitIcon; // Supposant vélo = transit pour l'icône
+    case 3: return transitIcon;
+    case 4: return transitIcon; // Supposant voiture = transit pour l'icône
+    default: return walkIcon;
+  }
+};
+// --- Fin des fonctions utilitaires ---
+
+interface ActivityCardProps {
+  item: Activity;
+  imageErrorIds: string[];
+  onImageError: (id: string) => void;
+  onDismiss: (id: string) => void;
+  onLearnMore: (activity: Activity) => void;
+  // Les fonctions utilitaires sont maintenant passées en props
+  formatPrice: (price: number, isFree: boolean) => string;
+  formatDuration: (min: number, max: number) => string;
+  getTransportIcon: (travelType: number) => any; // any car require() peut retourner divers types
+  placeholderImage: any; // any car require() peut retourner divers types
+  // styles: any; // Les styles sont définis ci-dessous et sont globaux au fichier pour l'instant
+}
+
+const ActivityCard: React.FC<ActivityCardProps> = ({
+  item,
+  imageErrorIds,
+  onImageError,
+  onDismiss,
+  onLearnMore,
+  formatPrice,
+  formatDuration,
+  getTransportIcon,
+  placeholderImage,
+  // styles // Les styles sont accessibles globalement
+}) => {
+  // Vérifions si l'URL est une URL Google Maps
+  const isGoogleMapsUrl = item.image_url?.includes('maps.googleapis.com');
+  
+  // Utiliser useCallback pour la fonction de gestion d'erreur
+  const handleImageError = useCallback(() => {
+    console.log('[ActivityCard] handleImageError triggered for ID:', item.id);
+    // Pour les URLs Google Maps, désactiver temporairement la gestion d'erreur
+    // car elles peuvent être valides même si React Native signale une erreur
+    if (isGoogleMapsUrl) {
+      console.log('[ActivityCard] Google Maps URL detected, ignoring error for now');
+      // Ne pas appeler onImageError pour les URLs Google Maps
+      return;
+    }
+    onImageError(item.id);
+  }, [item.id, onImageError, isGoogleMapsUrl]);
+
+  // Modifier la logique pour ne pas utiliser le placeholder pour les URLs Google Maps
+  // même si elles sont dans imageErrorIds
+  const shouldUsePlaceholder = !item.image_url || (!isGoogleMapsUrl && imageErrorIds.includes(item.id));
+  
+  console.log('[ActivityCard] shouldUsePlaceholder for ID:', item.id, 'is', shouldUsePlaceholder, 
+              'image_url:', item.image_url, 
+              'isError:', imageErrorIds.includes(item.id),
+              'isGoogleMapsUrl:', isGoogleMapsUrl);
+
+  const travelTimeInMinutes = Math.round(item.estimated_travel_time / 60);
+
+  return (
+    <View style={styles.cardContainer}>
+      <View style={styles.cardShadow}>
+        <View style={styles.cardInner}>
+          <View style={styles.imageContainer}>
+            <Image
+              source={shouldUsePlaceholder ? placeholderImage : { uri: item.image_url }}
+              style={styles.activityImage}
+              resizeMode="cover"
+              onError={handleImageError}
+            />
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => onDismiss(item.id)}
+            >
+              <Text style={styles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.keyInfoContainer}>
+            <View style={[styles.infoItem, { borderRightWidth: 1, borderRightColor: colors.border }]}>
+              <Text style={styles.infoValue}>{formatPrice(item.price_eur, item.is_free)}</Text>
+            </View>
+            <View style={[styles.infoItem, { borderRightWidth: 1, borderRightColor: colors.border }]}>
+              <Text style={styles.infoValue}>{formatDuration(item.duration_min, item.duration_max)}</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Image
+                source={getTransportIcon(item.travel_type)}
+                style={styles.transportIcon}
+              />
+              <Text style={styles.infoValue}>{travelTimeInMinutes} min</Text>
+            </View>
+          </View>
+          <View style={styles.contentContainer}>
+            <Text style={styles.title}>{item.title}</Text>
+            <Text style={styles.description} numberOfLines={2}>{item.description}</Text>
+          </View>
+          <View style={styles.moreButtonContainer}>
+            <TouchableOpacity style={styles.moreButton} onPress={() => onLearnMore(item)}>
+              <Text style={styles.moreButtonText}>En savoir plus →</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+};
+
 /**
  * Écran de shortlist qui affiche les 3 suggestions d'activités
  */
 const ShortlistScreen: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [imageErrorIds, setImageErrorIds] = useState<string[]>([]); // État pour les erreurs d'image
-  const [dismissedActivities, setDismissedActivities] = useState<string[]>([]); // État pour les activités fermées
+  const [imageErrorIds, setImageErrorIds] = useState<string[]>([]);
+  const [dismissedActivities, setDismissedActivities] = useState<string[]>([]);
   const flatListRef = useRef<FlatList>(null);
   const navigation = useNavigation<ShortlistScreenNavigationProp>();
   const route = useRoute<ShortlistScreenRouteProp>();
   const { activities } = route.params;
-  console.log('[ShortlistScreen] Received activities:', JSON.stringify(activities, null, 2)); // Log des activités reçues
+  console.log('[ShortlistScreen] Received activities:', JSON.stringify(activities, null, 2));
   
-  // Gestion du swipe entre les activités
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const slideSize = event.nativeEvent.layoutMeasurement.width;
     const index = Math.round(event.nativeEvent.contentOffset.x / slideSize);
@@ -55,160 +201,47 @@ const ShortlistScreen: React.FC = () => {
     }
   };
   
-  // Formatage du prix pour l'affichage
-  const formatPrice = (price: number, isFree: boolean) => {
-    if (isFree) return 'Gratuit';
-    if (price === 0) return 'Gratuit';
-    return `${price}€`;
-  };
-  
-  // Formatage de la durée
-  const formatDuration = (min: number, max: number) => {
-    if (min === max) {
-      // Si plus d'une heure, convertir en heures
-      if (min >= 60) {
-        const hours = Math.floor(min / 60);
-        const remainingMins = min % 60;
-        if (remainingMins === 0) {
-          return `${hours}h`;
-        }
-        return `${hours}h${remainingMins}`;
-      }
-      return `${min} min`;
-    }
-    
-    // Pour une plage de durée
-    if (min >= 60 || max >= 60) {
-      const minHours = Math.floor(min / 60);
-      const minRemaining = min % 60;
-      const maxHours = Math.floor(max / 60);
-      const maxRemaining = max % 60;
-      
-      if (minHours === 0) {
-        return `${min}min - ${maxHours}h${maxRemaining > 0 ? maxRemaining : ''}`;
-      } else if (maxHours === 0) {
-        return `${minHours}h${minRemaining > 0 ? minRemaining : ''} - ${max}min`;
-      } else {
-        return `${minHours}h${minRemaining > 0 ? minRemaining : ''} - ${maxHours}h${maxRemaining > 0 ? maxRemaining : ''}`;
-      }
-    }
-    
-    return `${min} - ${max} min`;
-  };
-  
-  // Transport icon selector based on travel_type
-  const getTransportIcon = (travelType: number) => {
-    // 1 = marche, 2 = vélo, 3 = transport en commun, 4 = voiture
-    switch(travelType) {
-      case 1:
-        return walkIcon;
-      case 2:
-        return transitIcon;
-      case 3:
-        return transitIcon;
-      case 4:
-        return transitIcon; // Nous pourrions avoir une icône de voiture spécifique dans le futur
-      default:
-        return walkIcon;
-    }
-  };
-  
-  // Gestion du bouton retour qui mène maintenant aux questions de raffinement
   const handleBackPress = () => {
     navigation.navigate('RefinementQuestions');
   };
   
-  // Gestion de la fermeture d'une activité (croix sur la carte)
   const handleDismissActivity = (activityId: string) => {
     const newDismissed = [...dismissedActivities, activityId];
     setDismissedActivities(newDismissed);
     
-    // Si toutes les activités ont été fermées, rediriger vers les questions de raffinement
     if (newDismissed.length === activities.length) {
       navigation.navigate('RefinementQuestions');
     }
   };
   
-  // Rendu d'une carte d'activité
-  const renderActivityCard = ({ item }: { item: Activity }) => {
-    console.log('[ShortlistScreen] renderActivityCard for item:', item); // Log des données de l'item
+  const handleLearnMore = (activity: Activity) => {
+    navigation.navigate('ActivityDetail', { activity });
+  };
 
-    const handleLearnMore = () => {
-      navigation.navigate('ActivityDetail', { activity: item });
-    };
-
-    const handleImageError = () => {
-      console.log('[ShortlistScreen] handleImageError called for ID:', item.id); // Log dans handleImageError
-      if (!imageErrorIds.includes(item.id)) {
-        setImageErrorIds(prev => [...prev, item.id]);
-      }
-    };
-
-    const shouldUsePlaceholder = !item.image_url || imageErrorIds.includes(item.id);
-    console.log('[ShortlistScreen] shouldUsePlaceholder for ID:', item.id, 'is', shouldUsePlaceholder, 'image_url:', item.image_url, 'isError:', imageErrorIds.includes(item.id)); // Log de la condition du placeholder
-
-    // Si l'activité a été fermée, ne pas l'afficher
-    if (dismissedActivities.includes(item.id)) {
-      return null;
+  // Nouvelle fonction pour gérer l'erreur d'image, passée à ActivityCard
+  const handleAddImageErrorId = useCallback((id: string) => {
+    if (!imageErrorIds.includes(id)) {
+      setImageErrorIds(prev => [...prev, id]);
     }
+  }, [imageErrorIds]);
 
+  const renderActivityCard = ({ item }: { item: Activity }) => {
+    if (dismissedActivities.includes(item.id)) {
+      return null; // Ne pas rendre si fermée
+    }
     return (
-      <View style={styles.cardContainer}>
-        <View style={styles.cardShadow}>
-          <View style={styles.cardInner}>
-            {/* Image de l'activité */}
-            <View style={styles.imageContainer}>
-              <Image 
-                source={shouldUsePlaceholder ? placeholderImage : { uri: item.image_url }}
-                style={styles.activityImage}
-                resizeMode="cover"
-                onError={handleImageError}
-              />
-              <TouchableOpacity 
-                style={styles.closeButton} 
-                onPress={() => handleDismissActivity(item.id)}
-              >
-                <Text style={styles.closeButtonText}>✕</Text>
-              </TouchableOpacity>
-            </View>
-            
-            {/* Informations clés */}
-            <View style={styles.keyInfoContainer}>
-              {/* Prix */}
-              <View style={[styles.infoItem, { borderRightWidth: 1, borderRightColor: colors.border }]}>
-                <Text style={styles.infoValue}>{formatPrice(item.price_eur, item.is_free)}</Text>
-              </View>
-              
-              {/* Durée */}
-              <View style={[styles.infoItem, { borderRightWidth: 1, borderRightColor: colors.border }]}>
-                <Text style={styles.infoValue}>{formatDuration(item.duration_min, item.duration_max)}</Text>
-              </View>
-              
-              {/* Temps de trajet */}
-              <View style={styles.infoItem}>
-                <Image 
-                  source={getTransportIcon(item.travel_type)} 
-                  style={styles.transportIcon}
-                />
-                <Text style={styles.infoValue}>{item.estimated_travel_time} min</Text>
-              </View>
-            </View>
-            
-            {/* Contenu */}
-            <View style={styles.contentContainer}>
-              <Text style={styles.title}>{item.title}</Text>
-              <Text style={styles.description} numberOfLines={2}>{item.description}</Text>
-            </View>
-            
-            {/* Bouton En savoir plus */}
-            <View style={styles.moreButtonContainer}>
-              <TouchableOpacity style={styles.moreButton} onPress={handleLearnMore}>
-                <Text style={styles.moreButtonText}>En savoir plus →</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </View>
+      <ActivityCard
+        item={item}
+        imageErrorIds={imageErrorIds}
+        onImageError={handleAddImageErrorId} // Utilise la nouvelle fonction
+        onDismiss={handleDismissActivity}
+        onLearnMore={handleLearnMore}
+        formatPrice={formatPrice}
+        formatDuration={formatDuration}
+        getTransportIcon={getTransportIcon}
+        placeholderImage={placeholderImage}
+        // styles={styles} // Les styles sont globaux
+      />
     );
   };
 
@@ -222,14 +255,14 @@ const ShortlistScreen: React.FC = () => {
         {/* Bouton retour */}
         <View style={styles.headerContainer}>
           <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-            <Text style={styles.backButtonText}>Annuler</Text>
+            <Text style={styles.backButtonText}>Rien ne me plaît</Text>
           </TouchableOpacity>
         </View>
         
         {/* Carrousel d'activités */}
         <FlatList
           ref={flatListRef}
-          data={activities}
+          data={activities.filter(activity => !dismissedActivities.includes(activity.id))} // Filtrer les activités ici aussi
           renderItem={renderActivityCard}
           keyExtractor={(item) => item.id}
           horizontal

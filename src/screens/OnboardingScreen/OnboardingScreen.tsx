@@ -45,15 +45,8 @@ const OnboardingScreen: React.FC = () => {
   ];
   
   const handleNext = () => {
-    if (activeIndex < slides.length - 1) {
-      flatListRef.current?.scrollToIndex({
-        index: activeIndex + 1,
-        animated: true
-      });
-    } else {
-      // Naviguer vers le premier écran de questions
-      navigation.navigate('Questions');
-    }
+    // Toujours naviguer vers l'écran Questions, quel que soit le slide actuel
+    navigation.navigate('Questions');
   };
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
