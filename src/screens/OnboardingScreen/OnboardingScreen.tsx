@@ -33,20 +33,14 @@ const OnboardingScreen: React.FC = () => {
     {
       title: "Bienvenue sur\nWhere2",
       description: "L'app qui t'aide à rebondir\nquand une activité est annulée,\nsans stress ni galère.",
-      buttonText: "Aide-moi à trouver mon plan B !",
-      buttonType: "link"
     },
     {
       title: "Ton compagnon\nmalin",
       description: "Je te pose juste quelques\nquestions, et tu repars avec une\nalternative à ton activité",
-      buttonText: "Aide-moi à trouver mon plan B !",
-      buttonType: "link"
     },
     {
       title: "Des propositions\nrien que pour toi",
       description: "Tes réponses suffisent pour te\nproposer des idées qui collent à\nton humeur et ton budget.",
-      buttonText: "Aide moi à trouver mon plan B !",
-      buttonType: "button"
     }
   ];
   
@@ -64,16 +58,15 @@ const OnboardingScreen: React.FC = () => {
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const contentOffsetX = event.nativeEvent.contentOffset.x;
-    const newIndex = Math.round(contentOffsetX / width);
+    const newIndex = Math.round(contentOffsetX / cardWidth);
     if (newIndex !== activeIndex) {
       setActiveIndex(newIndex);
     }
   };
   
-  const renderSlide = ({ item, index }: { item: typeof slides[0], index: number }) => {
+  const renderSlide = ({ item }: { item: typeof slides[0], index: number }) => {
     return (
-      <View style={styles.slide}>
-        {/* Carte principale */}
+      <View style={styles.cardContainer}>
         <View style={styles.card}>
           <View style={styles.mascotContainer}>
             <Mascot size="large" expression="happy" />
@@ -96,42 +89,48 @@ const OnboardingScreen: React.FC = () => {
             ))}
           </View>
         </View>
-        
-        {/* Bouton placé directement sous la carte */}
-        {activeIndex < 2 ? (
-          <TouchableOpacity 
-            style={styles.linkButton}
-            onPress={handleNext}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.linkButtonText}>{slides[activeIndex].buttonText}</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity 
-            style={styles.actionButton}
-            onPress={handleNext}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.actionButtonText}>{slides[activeIndex].buttonText}</Text>
-          </TouchableOpacity>
-        )}
       </View>
     );
   };
   
   return (
     <SafeAreaView style={styles.container}>
-      <FlatList
-        ref={flatListRef}
-        data={slides}
-        renderItem={renderSlide}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={handleScroll}
-        keyExtractor={(_, index) => index.toString()}
-        scrollEnabled={true}
-      />
+      <View style={styles.contentContainer}>
+        <View style={styles.cardButtonContainer}>
+          <FlatList
+            ref={flatListRef}
+            data={slides}
+            renderItem={renderSlide}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={handleScroll}
+            keyExtractor={(_, index) => index.toString()}
+            scrollEnabled={true}
+            contentContainerStyle={styles.flatListContent}
+          />
+          
+          <View style={styles.buttonContainer}>
+            {activeIndex < 2 ? (
+              <TouchableOpacity 
+                style={styles.linkButton}
+                onPress={handleNext}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.linkButtonText}>Aide-moi à trouver mon plan B !</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity 
+                style={styles.actionButton}
+                onPress={handleNext}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.actionButtonText}>Aide-moi à trouver mon plan B !</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      </View>
     </SafeAreaView>
   );
 };
@@ -144,11 +143,24 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.backgroundSecondary,
   },
-  slide: {
-    width,
+  contentContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: spacing.xl,
+  },
+  cardButtonContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  flatListContent: {
+    alignItems: 'center',
+  },
+  cardContainer: {
+    width: width,
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
   card: {
     width: cardWidth,
@@ -169,7 +181,7 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     alignItems: 'center',
-    marginBottom: spacing.xl,
+    marginBottom: spacing.md,
   },
   title: {
     ...typography.h2,
@@ -183,10 +195,14 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     lineHeight: 22,
   },
+  buttonContainer: {
+    width: '100%',
+    alignItems: 'center',
+    marginTop: spacing.md,
+  },
   dotsContainer: {
     flexDirection: 'row',
-    marginBottom: spacing.sm,
-    marginTop: spacing.md,
+    marginTop: spacing.lg,
   },
   dot: {
     width: 8,
@@ -202,7 +218,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xl,
     backgroundColor: 'transparent',
-    marginTop: spacing.lg,
   },
   linkButtonText: {
     ...typography.body,
@@ -214,7 +229,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xl,
     borderRadius: 50,
-    marginTop: spacing.lg,
     width: width - 64,
     alignItems: 'center',
   },

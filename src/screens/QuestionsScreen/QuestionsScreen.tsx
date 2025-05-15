@@ -140,30 +140,34 @@ const QuestionsScreen: React.FC = () => {
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoidingView}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
         <View style={styles.inner}>
           <Header />
           
           <View style={styles.content} onTouchStart={() => inputRef.current?.focus()}>
-            <View style={styles.mascotContainer}>
-              <Mascot size="large" expression="normal" />
+            <View style={styles.topContent}>
+              <View style={styles.mascotContainer}>
+                <Mascot size="large" expression="normal" />
+              </View>
+              
+              <View style={styles.questionContainer}>
+                <QuestionText>
+                  Quelle activité devais-tu faire ?
+                </QuestionText>
+                <TextInputWithIcon
+                  value={canceledActivity}
+                  onChangeText={setCanceledActivity}
+                  placeholder="Rentre ton activité"
+                  onIconPress={handleMicPress}
+                  style={styles.inputContainer}
+                  autoFocus={true}
+                  inputRef={inputRef}
+                />
+              </View>
             </View>
             
-            <View style={styles.questionContainer}>
-              <QuestionText>
-                Quelle activité devais-tu faire ?
-              </QuestionText>
-              <TextInputWithIcon
-                value={canceledActivity}
-                onChangeText={setCanceledActivity}
-                placeholder="Rentre ton activité"
-                onIconPress={handleMicPress}
-                style={styles.inputContainer}
-                autoFocus={true}
-                inputRef={inputRef}
-              />
-            </View>
+            <View style={styles.spacer} />
           </View>
           
           <View style={styles.buttonContainer}>
@@ -191,31 +195,40 @@ const styles = StyleSheet.create({
   inner: {
     flex: 1,
     justifyContent: 'space-between',
-    paddingBottom: spacing.xl,
+    paddingBottom: 0,
   },
   content: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingHorizontal: spacing.screenPadding,
-    paddingTop: 0,
+  },
+  topContent: {
+    width: '100%',
+    alignItems: 'center',
+    marginTop: 0,
+  },
+  spacer: {
+    flex: 1,
   },
   mascotContainer: {
     alignItems: 'center',
-    marginBottom: spacing.md,
-    marginTop: spacing.sm,
+    marginTop: -40,
+    marginBottom: spacing.xs,
   },
   questionContainer: {
     width: '100%',
-    marginTop: 0,
+    alignItems: 'center',
   },
   inputContainer: {
     width: '100%',
-    marginTop: spacing.md,
+    marginTop: spacing.sm,
   },
   buttonContainer: {
     paddingHorizontal: spacing.screenPadding,
-    marginTop: spacing.xl,
+    paddingBottom: spacing.md,
+    backgroundColor: colors.backgroundSecondary,
+    width: '100%',
   },
   button: {
     width: '100%',
