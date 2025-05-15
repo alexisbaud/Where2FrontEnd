@@ -23,7 +23,7 @@ export const suggestActivities = async (preferences: {
       lng: 2.3522
     };
 
-    const response = await fetch(`${API_URL}/suggest-o3`, {
+    const response = await fetch(`${API_URL}/mock-delay`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -51,6 +51,68 @@ export const suggestActivities = async (preferences: {
     return data;
   } catch (error) {
     console.error('Erreur lors de l\'appel API:', error);
+    throw error;
+  }
+};
+
+/**
+ * Service pour obtenir des suggestions raffinées avec des paramètres supplémentaires
+ */
+export const suggestRefinedActivities = async (preferences: {
+  canceledActivity: string;
+  sameActivityType: boolean;
+  budget: number;
+  transportTime: number;
+  energyLevel: number;
+  numberOfParticipants: number;
+  environmentPreference: 'indoor' | 'outdoor' | 'indifferent';
+  experienceType: 'authentic' | 'touristic' | 'indifferent';
+  eventPermanence: 'ephemeral' | 'permanent' | 'indifferent';
+}): Promise<ApiResponse> => {
+  try {
+    // Convertir le niveau d'énergie de l'index (0-6) au niveau correspondant (1-7)
+    const energyLevelAdjusted = preferences.energyLevel + 1;
+    
+    // Récupérer la position de l'utilisateur (pour le MVP, utiliser Paris)
+    const userLocation = {
+      lat: 48.8566,
+      lng: 2.3522
+    };
+
+    const response = await fetch(`${API_URL}/mock-delay`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        answers: {
+          canceled_activity: preferences.canceledActivity,
+          same_type: preferences.sameActivityType,
+          budget: preferences.budget,
+          travel_time: preferences.transportTime,
+          energy_level: energyLevelAdjusted,
+          // Paramètres supplémentaires de raffinement
+          num_participants: preferences.numberOfParticipants,
+          environment: preferences.environmentPreference,
+          experience_type: preferences.experienceType,
+          event_permanence: preferences.eventPermanence,
+          is_refined_search: true // Indicateur pour l'API
+        },
+        location: userLocation,
+        datetime: new Date().toISOString(),
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Erreur API (raffinée):', errorData);
+      throw new Error('Erreur lors de la récupération des suggestions raffinées');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Erreur lors de l\'appel API (raffinée):', error);
     throw error;
   }
 };

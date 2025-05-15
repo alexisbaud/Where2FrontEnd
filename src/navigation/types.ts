@@ -22,6 +22,21 @@ export type RootStackParamList = {
   Recommendations: undefined;
   ActivityDetails: { activityId: string };
   RefinementQuestions: undefined;
+  ParticipantsQuestion: undefined;
+  EnvironmentQuestion: undefined;
+  ExperienceTypeQuestion: undefined;
+  PermanenceQuestion: undefined;
+  RefinementLoading: {
+    canceledActivity: string;
+    sameActivityType: boolean;
+    budget: number;
+    transportTime: number;
+    energyLevel: number;
+    numberOfParticipants: number;
+    environmentPreference: 'indoor' | 'outdoor' | 'indifferent';
+    experienceType: 'authentic' | 'touristic' | 'indifferent';
+    eventPermanence: 'ephemeral' | 'permanent' | 'indifferent';
+  };
 };
 
 // Types pour les propriétés des écrans

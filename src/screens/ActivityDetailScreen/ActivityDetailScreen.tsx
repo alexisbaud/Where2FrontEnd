@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -14,7 +14,7 @@ import {
   Alert,
 } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
-import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
+import { RouteProp, useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList, Activity } from '../../navigation/types';
 import Header from '../../components/Header';
@@ -22,8 +22,8 @@ import colors from '../../styles/colors';
 import spacing from '../../styles/spacing';
 import typography from '../../styles/typography';
 
-// Placeholder pour l'image de la carte, à remplacer par une vraie implémentation de carte plus tard
-const mapPlaceholder = require('../../assets/activity_placeholder.png'); 
+// Commenter ou supprimer l'import de mapPlaceholder car il n'est plus utilisé et le fichier n'existe pas
+// const mapPlaceholder = require('../../assets/map_placeholder.png'); 
 const placeholderImage = require('../../assets/activity_placeholder.png');
 
 // Icônes de transport
@@ -49,6 +49,22 @@ const ActivityDetailScreen: React.FC = () => {
   const route = useRoute<ActivityDetailScreenRouteProp>();
   const navigation = useNavigation<ActivityDetailScreenNavigationProp>();
   const { activity } = route.params;
+  const [imageLoadingError, setImageLoadingError] = useState(false);
+
+  // Réinitialiser l'erreur de chargement lorsque l'écran devient focus
+  useFocusEffect(
+    useCallback(() => {
+      console.log('[ActivityDetailScreen] Screen focused, resetting imageLoadingError. Activity ID:', activity.id);
+      setImageLoadingError(false);
+      return () => {
+        // Optionnel: actions de nettoyage si l'écran perd le focus et que le composant n'est pas démonté
+        console.log('[ActivityDetailScreen] Screen lost focus. Activity ID:', activity.id);
+      };
+    }, [activity.id]) // S'assurer de recréer la callback si l'id de l'activité change, pour avoir le bon id dans les logs
+  );
+
+  console.log('[ActivityDetailScreen] Rendering. imageLoadingError:', imageLoadingError, 'activity.image_url:', activity.image_url);
+  console.log('[ActivityDetailScreen] Calculated image dimensions WxH:', calculatedImageWidth, calculatedImageHeight);
 
   const formatPrice = (price: number, isFree: boolean) => {
     if (isFree || price === 0) return 'Gratuit';
@@ -74,6 +90,11 @@ const ActivityDetailScreen: React.FC = () => {
         console.error("Couldn't load page", err)
       );
     }
+  };
+
+  const handleMainImageError = () => {
+    console.log('[ActivityDetailScreen] handleMainImageError called. Setting imageLoadingError to true.'); // Log dans handleMainImageError
+    setImageLoadingError(true);
   };
 
   const handleGoToActivity = async () => {
@@ -201,8 +222,10 @@ const ActivityDetailScreen: React.FC = () => {
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.imageOuterContainer}>
           <Image 
-            source={activity.image_url ? { uri: activity.image_url } : placeholderImage}
-            style={styles.activityImage} 
+            source={activity.image_url && !imageLoadingError ? { uri: activity.image_url } : placeholderImage}
+            style={styles.activityImage}
+            onError={handleMainImageError}
+            resizeMode="cover" // Assurons-nous que resizeMode est bien là
           />
         </View>
 

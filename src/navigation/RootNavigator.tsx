@@ -14,6 +14,14 @@ import LoadingScreen from '../screens/LoadingScreen/LoadingScreen';
 import ShortlistScreen from '../screens/ShortlistScreen/ShortlistScreen';
 import ActivityDetailScreen from '../screens/ActivityDetailScreen/ActivityDetailScreen';
 
+// Import des écrans de raffinement
+import RefinementQuestionsScreen from '../screens/RefinementQuestionsScreen/RefinementQuestionsScreen';
+import ParticipantsQuestionScreen from '../screens/ParticipantsQuestionScreen/ParticipantsQuestionScreen';
+import EnvironmentQuestionScreen from '../screens/EnvironmentQuestionScreen/EnvironmentQuestionScreen';
+import ExperienceTypeQuestionScreen from '../screens/ExperienceTypeQuestionScreen/ExperienceTypeQuestionScreen';
+import PermanenceQuestionScreen from '../screens/PermanenceQuestionScreen/PermanenceQuestionScreen';
+import RefinementLoadingScreen from '../screens/RefinementLoadingScreen';
+
 // Création du stack navigator
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -68,6 +76,38 @@ const RootNavigator: React.FC = () => {
           name="ActivityDetail"
           component={ActivityDetailScreen} 
           options={{ headerShown: false }} 
+        />
+        
+        {/* Écrans de raffinement */}
+        <Stack.Screen
+          name="RefinementQuestions"
+          component={RefinementQuestionsScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ParticipantsQuestion"
+          component={ParticipantsQuestionScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="EnvironmentQuestion"
+          component={EnvironmentQuestionScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ExperienceTypeQuestion"
+          component={ExperienceTypeQuestionScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="PermanenceQuestion"
+          component={PermanenceQuestionScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="RefinementLoading"
+          component={RefinementLoadingScreen}
+          options={{ headerShown: false, gestureEnabled: false }}
         />
         
         {/* Les autres écrans seront ajoutés au fur et à mesure du développement */}

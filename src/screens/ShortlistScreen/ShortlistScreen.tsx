@@ -37,10 +37,13 @@ const cardWidth = width - 40; // Légère marge des deux côtés
  */
 const ShortlistScreen: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [imageErrorIds, setImageErrorIds] = useState<string[]>([]); // État pour les erreurs d'image
+  const [dismissedActivities, setDismissedActivities] = useState<string[]>([]); // État pour les activités fermées
   const flatListRef = useRef<FlatList>(null);
   const navigation = useNavigation<ShortlistScreenNavigationProp>();
   const route = useRoute<ShortlistScreenRouteProp>();
   const { activities } = route.params;
+  console.log('[ShortlistScreen] Received activities:', JSON.stringify(activities, null, 2)); // Log des activités reçues
   
   // Gestion du swipe entre les activités
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -110,11 +113,44 @@ const ShortlistScreen: React.FC = () => {
     }
   };
   
+  // Gestion du bouton retour qui mène maintenant aux questions de raffinement
+  const handleBackPress = () => {
+    navigation.navigate('RefinementQuestions');
+  };
+  
+  // Gestion de la fermeture d'une activité (croix sur la carte)
+  const handleDismissActivity = (activityId: string) => {
+    const newDismissed = [...dismissedActivities, activityId];
+    setDismissedActivities(newDismissed);
+    
+    // Si toutes les activités ont été fermées, rediriger vers les questions de raffinement
+    if (newDismissed.length === activities.length) {
+      navigation.navigate('RefinementQuestions');
+    }
+  };
+  
   // Rendu d'une carte d'activité
   const renderActivityCard = ({ item }: { item: Activity }) => {
+    console.log('[ShortlistScreen] renderActivityCard for item:', item); // Log des données de l'item
+
     const handleLearnMore = () => {
       navigation.navigate('ActivityDetail', { activity: item });
     };
+
+    const handleImageError = () => {
+      console.log('[ShortlistScreen] handleImageError called for ID:', item.id); // Log dans handleImageError
+      if (!imageErrorIds.includes(item.id)) {
+        setImageErrorIds(prev => [...prev, item.id]);
+      }
+    };
+
+    const shouldUsePlaceholder = !item.image_url || imageErrorIds.includes(item.id);
+    console.log('[ShortlistScreen] shouldUsePlaceholder for ID:', item.id, 'is', shouldUsePlaceholder, 'image_url:', item.image_url, 'isError:', imageErrorIds.includes(item.id)); // Log de la condition du placeholder
+
+    // Si l'activité a été fermée, ne pas l'afficher
+    if (dismissedActivities.includes(item.id)) {
+      return null;
+    }
 
     return (
       <View style={styles.cardContainer}>
@@ -123,11 +159,15 @@ const ShortlistScreen: React.FC = () => {
             {/* Image de l'activité */}
             <View style={styles.imageContainer}>
               <Image 
-                source={item.image_url ? { uri: item.image_url } : placeholderImage} 
+                source={shouldUsePlaceholder ? placeholderImage : { uri: item.image_url }}
                 style={styles.activityImage}
                 resizeMode="cover"
+                onError={handleImageError}
               />
-              <TouchableOpacity style={styles.closeButton} onPress={handleBackPress}>
+              <TouchableOpacity 
+                style={styles.closeButton} 
+                onPress={() => handleDismissActivity(item.id)}
+              >
                 <Text style={styles.closeButtonText}>✕</Text>
               </TouchableOpacity>
             </View>
@@ -172,11 +212,6 @@ const ShortlistScreen: React.FC = () => {
     );
   };
 
-  // Gestion du bouton retour
-  const handleBackPress = () => {
-    navigation.goBack();
-  };
-  
   return (
     <LinearGradient 
       colors={[colors.backgroundSecondary, colors.background]} 
