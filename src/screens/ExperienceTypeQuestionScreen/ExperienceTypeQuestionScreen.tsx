@@ -4,11 +4,17 @@ import {
   Text, 
   StyleSheet, 
   SafeAreaView,
-  TouchableOpacity
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import LinearGradient from 'react-native-linear-gradient';
+import Mascot from '../../components/Mascot';
+import Header from '../../components/Header';
+import { PrimaryButton } from '../../components/Button';
+import ChoiceButton from '../../components/ChoiceButton';
+import QuestionText from '../../components/QuestionText/QuestionText';
 import { RootStackParamList } from '../../navigation/types';
 import colors from '../../styles/colors';
 import spacing from '../../styles/spacing';
@@ -22,32 +28,9 @@ type ExperienceTypeQuestionScreenNavigationProp = StackNavigationProp<
 // Types d'expérience disponibles
 type ExperienceType = 'authentic' | 'touristic' | 'indifferent';
 
-// Options à afficher
-const experienceOptions: Array<{
-  value: ExperienceType,
-  label: string,
-}> = [
-  {
-    value: 'authentic',
-    label: 'Plutôt authentique',
-  },
-  {
-    value: 'touristic',
-    label: 'Plutôt touristique',
-  },
-  {
-    value: 'indifferent',
-    label: 'Peu importe',
-  }
-];
-
 const ExperienceTypeQuestionScreen: React.FC = () => {
   const [selectedExperience, setSelectedExperience] = useState<ExperienceType | null>(null);
   const navigation = useNavigation<ExperienceTypeQuestionScreenNavigationProp>();
-
-  const handleBack = () => {
-    navigation.goBack();
-  };
 
   const handleNext = () => {
     if (selectedExperience) {
@@ -56,165 +39,115 @@ const ExperienceTypeQuestionScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* En-tête avec navigation */}
-      <View style={styles.headerContainer}>
-        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <Text style={styles.backButtonText}>Retour</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Question */}
-      <Text style={styles.questionText}>
-        Quel genre d'expérience recherches-tu principalement ?
-      </Text>
-
-      {/* Options */}
-      <View style={styles.optionsContainer}>
-        <View style={styles.buttonRow}>
-          {experienceOptions.slice(0, 2).map((option) => (
-            <TouchableOpacity
-              key={option.value}
-              style={[
-                styles.optionButton,
-                selectedExperience === option.value && styles.selectedOption
-              ]}
-              onPress={() => setSelectedExperience(option.value)}
-            >
-              <Text style={[
-                styles.optionText,
-                selectedExperience === option.value && styles.selectedOptionText
-              ]}>
-                {option.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
+    <SafeAreaView style={styles.container}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.inner}>
+          <Header />
+          
+          <View style={styles.content}>
+            <View style={styles.topContent}>
+              <View style={styles.mascotContainer}>
+                <Mascot size="large" expression="normal" />
+              </View>
+              
+              <View style={styles.questionContainer}>
+                <QuestionText>
+                  Quel genre d'expérience recherches-tu principalement ?
+                </QuestionText>
+              </View>
+            </View>
+            
+            <View style={styles.optionsContainer}>
+              <View style={styles.row}>
+                <ChoiceButton
+                  title="Plutôt authentique"
+                  onPress={() => setSelectedExperience('authentic')}
+                  selected={selectedExperience === 'authentic'}
+                  style={styles.choiceButton}
+                />
+                <ChoiceButton
+                  title="Plutôt touristique"
+                  onPress={() => setSelectedExperience('touristic')}
+                  selected={selectedExperience === 'touristic'}
+                  style={styles.choiceButton}
+                />
+              </View>
+              <ChoiceButton
+                title="Peu importe"
+                onPress={() => setSelectedExperience('indifferent')}
+                selected={selectedExperience === 'indifferent'}
+                style={styles.fullWidthButton}
+              />
+            </View>
+          </View>
+          
+          <View style={styles.buttonContainer}>
+            <PrimaryButton
+              title="Suivant"
+              onPress={handleNext}
+              disabled={!selectedExperience}
+              style={styles.button}
+            />
+          </View>
         </View>
-        
-        <TouchableOpacity
-          style={[
-            styles.optionButtonFull,
-            selectedExperience === 'indifferent' && styles.selectedOption
-          ]}
-          onPress={() => setSelectedExperience('indifferent')}
-        >
-          <Text style={[
-            styles.optionText,
-            selectedExperience === 'indifferent' && styles.selectedOptionText
-          ]}>
-            {experienceOptions[2].label}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Bouton Suivant */}
-      <TouchableOpacity
-        style={[
-          styles.nextButton,
-          !selectedExperience && styles.disabledButton
-        ]}
-        onPress={handleNext}
-        disabled={!selectedExperience}
-      >
-        <Text style={styles.nextButtonText}>Suivant</Text>
-      </TouchableOpacity>
-    </View>
+      </TouchableWithoutFeedback>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
-    padding: spacing.screenPadding,
+    backgroundColor: colors.backgroundSecondary,
   },
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-    marginTop: spacing.md,
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  backButtonText: {
-    ...typography.body,
-    fontWeight: '500',
-    color: colors.text,
-  },
-  questionText: {
-    ...typography.h3,
-    textAlign: 'center',
-    marginBottom: spacing.xl * 2,
-    marginTop: spacing.xl,
-  },
-  optionsContainer: {
+  inner: {
     flex: 1,
-    marginBottom: spacing.xl,
-  },
-  buttonRow: {
-    flexDirection: 'row',
     justifyContent: 'space-between',
+    paddingBottom: spacing.xl,
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.screenPadding,
+    paddingTop: 0,
+  },
+  topContent: {
+    alignItems: 'center',
+  },
+  mascotContainer: {
+    alignItems: 'center',
+    marginTop: -spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  questionContainer: {
+    width: '100%',
+    marginTop: 0,
     marginBottom: spacing.md,
   },
-  optionButton: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: spacing.md,
-    paddingVertical: spacing.xl,
-    borderWidth: 1,
-    borderColor: '#EEEEEE',
-    alignItems: 'center',
+  optionsContainer: {
+    marginTop: spacing.md,
+    width: '100%',
+    flex: 1,
     justifyContent: 'center',
-    flex: 0.48,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
   },
-  optionButtonFull: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: spacing.md,
-    paddingVertical: spacing.xl,
-    borderWidth: 1,
-    borderColor: '#EEEEEE',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: spacing.sm,
   },
-  selectedOption: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primary + '10',
+  choiceButton: {
+    flex: 1,
+    marginHorizontal: spacing.xs,
   },
-  optionText: {
-    ...typography.body,
-    fontWeight: '600',
-    textAlign: 'center',
+  fullWidthButton: {
+    width: '100%',
   },
-  selectedOptionText: {
-    color: colors.primary,
+  buttonContainer: {
+    paddingHorizontal: spacing.screenPadding,
+    marginTop: spacing.xl,
   },
-  nextButton: {
-    backgroundColor: 'black',
-    borderRadius: 25,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xl,
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  disabledButton: {
-    backgroundColor: colors.inactive,
-  },
-  nextButtonText: {
-    ...typography.buttonLabel,
-    color: 'white',
+  button: {
+    width: '100%',
   },
 });
 

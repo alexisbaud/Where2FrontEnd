@@ -1,20 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
   StyleSheet, 
   SafeAreaView,
   TouchableOpacity,
-  FlatList
+  TouchableWithoutFeedback,
+  Keyboard
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import LinearGradient from 'react-native-linear-gradient';
+import Mascot from '../../components/Mascot';
+import Header from '../../components/Header';
+import { PrimaryButton } from '../../components/Button';
 import { RootStackParamList } from '../../navigation/types';
 import colors from '../../styles/colors';
 import spacing from '../../styles/spacing';
 import typography from '../../styles/typography';
+import QuestionText from '../../components/QuestionText/QuestionText';
 
 type ParticipantsQuestionScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -26,11 +30,17 @@ const MAX_PARTICIPANTS = 5;
 
 const ParticipantsQuestionScreen: React.FC = () => {
   const [participantsCount, setParticipantsCount] = useState<number>(1);
+  const [sliderValue, setSliderValue] = useState<number>(1);
   const navigation = useNavigation<ParticipantsQuestionScreenNavigationProp>();
 
-  const handleBack = () => {
-    navigation.goBack();
-  };
+  // Effet pour s'assurer que le slider s'accroche aux valeurs discrètes
+  useEffect(() => {
+    const roundedValue = Math.round(sliderValue);
+    if (roundedValue !== sliderValue) {
+      setSliderValue(roundedValue);
+    }
+    setParticipantsCount(roundedValue);
+  }, [sliderValue]);
 
   const handleNext = () => {
     navigation.navigate('EnvironmentQuestion');
@@ -38,140 +48,127 @@ const ParticipantsQuestionScreen: React.FC = () => {
 
   // Formater l'affichage du nombre de participants
   const formatParticipants = (value: number): string => {
-    if (value >= MAX_PARTICIPANTS) return "5+";
-    return value.toString();
+    if (value === 1) return "1 personne";
+    if (value === 5) return "5 personnes";
+    return `${value} personnes`;
   };
 
   return (
-    <LinearGradient
-      colors={[colors.backgroundSecondary, colors.background]}
-      style={styles.gradientContainer}
-      locations={[0.7, 1.0]}
-    >
-      <SafeAreaView style={styles.container}>
-        {/* En-tête avec navigation */}
-        <View style={styles.headerContainer}>
-          <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-            <Text style={styles.backButtonText}>Retour</Text>
-          </TouchableOpacity>
+    <SafeAreaView style={styles.container}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.inner}>
+          <Header />
+          
+          <View style={styles.content}>
+            <View style={styles.mascotContainer}>
+              <Mascot size="large" expression="normal" />
+            </View>
+            
+            <View style={styles.questionContainer}>
+              <QuestionText>
+                Combien de personnes participeront à cette activité (toi inclus) ?
+              </QuestionText>
+              
+              <View style={styles.sliderContainer}>
+                <View style={styles.sliderLabelsContainer}>
+                  <Text style={styles.sliderMinLabel}>Je suis seul</Text>
+                  <Text style={styles.sliderMaxLabel}>5+ personnes</Text>
+                </View>
+                <Slider
+                  style={styles.slider}
+                  minimumValue={MIN_PARTICIPANTS}
+                  maximumValue={MAX_PARTICIPANTS}
+                  step={1}
+                  value={sliderValue}
+                  onValueChange={setSliderValue}
+                  minimumTrackTintColor={colors.primary}
+                  maximumTrackTintColor={colors.border}
+                  thumbTintColor={colors.primary}
+                />
+                
+                <Text style={styles.valueText}>
+                  {formatParticipants(participantsCount)}
+                </Text>
+              </View>
+            </View>
+          </View>
+          
+          <View style={styles.buttonContainer}>
+            <PrimaryButton
+              title="Suivant"
+              onPress={handleNext}
+              style={styles.button}
+            />
+          </View>
         </View>
-
-        {/* Question */}
-        <View style={styles.questionContainer}>
-          <Text style={styles.questionText}>
-            Combien de personnes participeront à cette activité (toi inclus) ?
-          </Text>
-        </View>
-
-        {/* Valeur actuelle du slider */}
-        <View style={styles.valueContainer}>
-          <Text style={styles.valueText}>
-            {formatParticipants(participantsCount)} {participantsCount === 1 ? 'personne' : 'personnes'}
-          </Text>
-        </View>
-
-        {/* Slider */}
-        <View style={styles.sliderContainer}>
-          <Text style={styles.rangeLabel}>1</Text>
-          <Slider
-            style={styles.slider}
-            minimumValue={MIN_PARTICIPANTS}
-            maximumValue={MAX_PARTICIPANTS}
-            step={1}
-            value={participantsCount}
-            onValueChange={setParticipantsCount}
-            minimumTrackTintColor={colors.primary}
-            maximumTrackTintColor="#D3D3D3"
-            thumbTintColor={colors.primary}
-          />
-          <Text style={styles.rangeLabel}>5+</Text>
-        </View>
-
-        {/* Bouton Suivant */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.nextButton}
-            onPress={handleNext}
-          >
-            <Text style={styles.nextButtonText}>Suivant</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    </LinearGradient>
+      </TouchableWithoutFeedback>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  gradientContainer: {
-    flex: 1,
-  },
   container: {
     flex: 1,
+    backgroundColor: colors.backgroundSecondary,
   },
-  headerContainer: {
-    flexDirection: 'row',
+  inner: {
+    flex: 1,
     justifyContent: 'space-between',
+    paddingBottom: spacing.xl,
+  },
+  content: {
+    flex: 1,
     alignItems: 'center',
+    justifyContent: 'flex-start',
     paddingHorizontal: spacing.screenPadding,
-    paddingVertical: spacing.md,
+    paddingTop: 0,
   },
-  backButton: {
-    paddingVertical: spacing.sm,
-  },
-  backButtonText: {
-    ...typography.body,
-    fontWeight: '500',
-    color: colors.text,
+  mascotContainer: {
+    alignItems: 'center',
+    marginBottom: spacing.md,
+    marginTop: spacing.sm,
   },
   questionContainer: {
-    paddingHorizontal: spacing.screenPadding,
-    marginBottom: spacing.md,
-  },
-  questionText: {
-    ...typography.h3,
-    textAlign: 'center',
-    marginVertical: spacing.md,
-  },
-  valueContainer: {
-    alignItems: 'center',
-    marginBottom: spacing.xl * 2,
+    width: '100%',
+    marginTop: 0,
   },
   valueText: {
-    ...typography.h1,
-    fontWeight: 'bold',
-    color: colors.text,
-  },
-  sliderContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginHorizontal: spacing.md,
-    flex: 1,
-  },
-  slider: {
-    flex: 1,
-    height: 40,
-    marginHorizontal: spacing.md,
-  },
-  rangeLabel: {
     ...typography.body,
     fontWeight: '600',
-    color: colors.textSecondary,
+    color: colors.text,
+    fontSize: 24,
+    textAlign: 'center',
+    marginTop: spacing.md,
   },
-  buttonContainer: {
-    padding: spacing.screenPadding,
-    marginTop: 'auto',
-    marginBottom: spacing.md,
-  },
-  nextButton: {
-    backgroundColor: colors.primary,
-    borderRadius: spacing.borderRadius,
-    paddingVertical: spacing.md,
+  sliderContainer: {
+    width: '100%',
+    marginTop: spacing.md,
     alignItems: 'center',
   },
-  nextButtonText: {
-    ...typography.buttonLabel,
-    color: colors.background,
+  sliderLabelsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: spacing.xs,
+  },
+  sliderMinLabel: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+  sliderMaxLabel: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+  slider: {
+    width: '100%',
+    height: 40,
+  },
+  buttonContainer: {
+    paddingHorizontal: spacing.screenPadding,
+    marginTop: spacing.xl,
+  },
+  button: {
+    width: '100%',
   },
 });
 

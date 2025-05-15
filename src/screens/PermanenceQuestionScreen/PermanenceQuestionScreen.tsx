@@ -4,11 +4,17 @@ import {
   Text, 
   StyleSheet, 
   SafeAreaView,
-  TouchableOpacity
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import LinearGradient from 'react-native-linear-gradient';
+import Mascot from '../../components/Mascot';
+import Header from '../../components/Header';
+import { PrimaryButton } from '../../components/Button';
+import ChoiceButton from '../../components/ChoiceButton';
+import QuestionText from '../../components/QuestionText/QuestionText';
 import { RootStackParamList } from '../../navigation/types';
 import colors from '../../styles/colors';
 import spacing from '../../styles/spacing';
@@ -22,32 +28,9 @@ type PermanenceQuestionScreenNavigationProp = StackNavigationProp<
 // Types de permanence disponibles
 type PermanenceType = 'ephemeral' | 'permanent' | 'indifferent';
 
-// Options à afficher
-const permanenceOptions: Array<{
-  value: PermanenceType,
-  label: string,
-}> = [
-  {
-    value: 'ephemeral',
-    label: 'Événement éphémère',
-  },
-  {
-    value: 'permanent',
-    label: 'Activité permanente',
-  },
-  {
-    value: 'indifferent',
-    label: 'Peu importe',
-  }
-];
-
 const PermanenceQuestionScreen: React.FC = () => {
   const [selectedPermanence, setSelectedPermanence] = useState<PermanenceType | null>(null);
   const navigation = useNavigation<PermanenceQuestionScreenNavigationProp>();
-
-  const handleBack = () => {
-    navigation.goBack();
-  };
 
   // À ce stade, nous avons toutes les réponses pour les questions de raffinement
   // Dans un cas réel, nous devrions récupérer toutes les réponses depuis un état global
@@ -70,180 +53,115 @@ const PermanenceQuestionScreen: React.FC = () => {
   };
 
   return (
-    <LinearGradient
-      colors={[colors.backgroundSecondary, colors.background]}
-      style={styles.gradientContainer}
-      locations={[0.7, 1.0]}
-    >
-      <SafeAreaView style={styles.container}>
-        {/* En-tête avec navigation */}
-        <View style={styles.headerContainer}>
-          <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-            <Text style={styles.backButtonText}>Retour</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Question */}
-        <View style={styles.questionContainer}>
-          <Text style={styles.questionText}>
-            Es-tu intéressé(e) par un événement éphémère ou une activité disponible de façon plus permanente ?
-          </Text>
-        </View>
-
-        {/* Options */}
-        <View style={styles.optionsContainer}>
-          <View style={styles.buttonRow}>
-            {permanenceOptions.slice(0, 2).map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                style={[
-                  styles.optionButton,
-                  selectedPermanence === option.value && styles.selectedOption
-                ]}
-                onPress={() => setSelectedPermanence(option.value)}
-              >
-                <Text style={[
-                  styles.optionText,
-                  selectedPermanence === option.value && styles.selectedOptionText
-                ]}>
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+    <SafeAreaView style={styles.container}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.inner}>
+          <Header />
+          
+          <View style={styles.content}>
+            <View style={styles.topContent}>
+              <View style={styles.mascotContainer}>
+                <Mascot size="large" expression="normal" />
+              </View>
+              
+              <View style={styles.questionContainer}>
+                <QuestionText>
+                  Es-tu intéressé(e) par un événement éphémère ou une activité disponible de façon plus permanente ?
+                </QuestionText>
+              </View>
+            </View>
+            
+            <View style={styles.optionsContainer}>
+              <View style={styles.row}>
+                <ChoiceButton
+                  title="Événement éphémère"
+                  onPress={() => setSelectedPermanence('ephemeral')}
+                  selected={selectedPermanence === 'ephemeral'}
+                  style={styles.choiceButton}
+                />
+                <ChoiceButton
+                  title="Activité permanente"
+                  onPress={() => setSelectedPermanence('permanent')}
+                  selected={selectedPermanence === 'permanent'}
+                  style={styles.choiceButton}
+                />
+              </View>
+              <ChoiceButton
+                title="Peu importe"
+                onPress={() => setSelectedPermanence('indifferent')}
+                selected={selectedPermanence === 'indifferent'}
+                style={styles.fullWidthButton}
+              />
+            </View>
           </View>
           
-          <TouchableOpacity
-            style={[
-              styles.optionButtonFull,
-              selectedPermanence === 'indifferent' && styles.selectedOption
-            ]}
-            onPress={() => setSelectedPermanence('indifferent')}
-          >
-            <Text style={[
-              styles.optionText,
-              selectedPermanence === 'indifferent' && styles.selectedOptionText
-            ]}>
-              {permanenceOptions[2].label}
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.buttonContainer}>
+            <PrimaryButton
+              title="Chercher des activités"
+              onPress={handleNext}
+              disabled={!selectedPermanence}
+              style={styles.button}
+            />
+          </View>
         </View>
-
-        {/* Bouton Suivant */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[
-              styles.nextButton,
-              !selectedPermanence && styles.disabledButton
-            ]}
-            onPress={handleNext}
-            disabled={!selectedPermanence}
-          >
-            <Text style={styles.nextButtonText}>Chercher des activités</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    </LinearGradient>
+      </TouchableWithoutFeedback>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  gradientContainer: {
-    flex: 1,
-  },
   container: {
     flex: 1,
+    backgroundColor: colors.backgroundSecondary,
   },
-  headerContainer: {
-    flexDirection: 'row',
+  inner: {
+    flex: 1,
     justifyContent: 'space-between',
-    alignItems: 'center',
+    paddingBottom: spacing.xl,
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'space-between',
     paddingHorizontal: spacing.screenPadding,
-    paddingVertical: spacing.md,
+    paddingTop: 0,
   },
-  backButton: {
-    paddingVertical: spacing.sm,
+  topContent: {
+    alignItems: 'center',
   },
-  backButtonText: {
-    ...typography.body,
-    fontWeight: '500',
-    color: colors.text,
+  mascotContainer: {
+    alignItems: 'center',
+    marginTop: -spacing.sm,
+    marginBottom: spacing.xs,
   },
   questionContainer: {
-    paddingHorizontal: spacing.screenPadding,
-    marginVertical: spacing.xl,
-  },
-  questionText: {
-    ...typography.h3,
-    textAlign: 'center',
+    width: '100%',
+    marginTop: 0,
+    marginBottom: spacing.md,
   },
   optionsContainer: {
+    marginTop: spacing.md,
+    width: '100%',
     flex: 1,
-    paddingHorizontal: spacing.screenPadding,
+    justifyContent: 'center',
   },
-  buttonRow: {
+  row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
-  optionButton: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: spacing.md,
-    paddingVertical: spacing.xl,
-    borderWidth: 1,
-    borderColor: '#EEEEEE',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 0.48,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
+  choiceButton: {
+    flex: 1,
+    marginHorizontal: spacing.xs,
   },
-  optionButtonFull: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: spacing.md,
-    paddingVertical: spacing.xl,
-    borderWidth: 1,
-    borderColor: '#EEEEEE',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  selectedOption: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primary + '10',
-  },
-  optionText: {
-    ...typography.body,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  selectedOptionText: {
-    color: colors.primary,
+  fullWidthButton: {
+    width: '100%',
   },
   buttonContainer: {
-    padding: spacing.screenPadding,
-    marginBottom: spacing.md,
+    paddingHorizontal: spacing.screenPadding,
+    marginTop: spacing.xl,
   },
-  nextButton: {
-    backgroundColor: colors.primary,
-    borderRadius: spacing.borderRadius,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
-  },
-  disabledButton: {
-    backgroundColor: colors.inactive,
-  },
-  nextButtonText: {
-    ...typography.buttonLabel,
-    color: colors.background,
+  button: {
+    width: '100%',
   },
 });
 
