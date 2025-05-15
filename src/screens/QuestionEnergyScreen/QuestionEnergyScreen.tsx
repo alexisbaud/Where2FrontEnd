@@ -57,13 +57,20 @@ const QuestionEnergyScreen: React.FC = () => {
   }, [sliderValue]);
 
   const handleNext = () => {
-    // Pour l'instant, nous simulons simplement la navigation
-    console.log('Navigation vers la prochaine question avec:', {
+    // Navigation vers l'écran de chargement des résultats
+    navigation.navigate('Loading', {
       canceledActivity,
       sameActivityType,
       budget,
       transportTime,
-      energyLevel: ENERGY_LEVELS[energyLevel]
+      energyLevel
+    });
+    console.log('Navigation vers l\'écran de chargement avec:', {
+      canceledActivity,
+      sameActivityType,
+      budget,
+      transportTime,
+      energyLevel
     });
   };
 

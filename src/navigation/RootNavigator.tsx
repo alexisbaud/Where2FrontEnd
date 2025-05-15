@@ -10,6 +10,9 @@ import QuestionChoiceScreen from '../screens/QuestionChoiceScreen/QuestionChoice
 import QuestionBudgetScreen from '../screens/QuestionBudgetScreen/QuestionBudgetScreen';
 import QuestionTransportScreen from '../screens/QuestionTransportScreen/QuestionTransportScreen';
 import QuestionEnergyScreen from '../screens/QuestionEnergyScreen/QuestionEnergyScreen';
+import LoadingScreen from '../screens/LoadingScreen/LoadingScreen';
+import ShortlistScreen from '../screens/ShortlistScreen/ShortlistScreen';
+import ActivityDetailScreen from '../screens/ActivityDetailScreen/ActivityDetailScreen';
 
 // Création du stack navigator
 const Stack = createStackNavigator<RootStackParamList>();
@@ -50,10 +53,26 @@ const RootNavigator: React.FC = () => {
           options={{ headerShown: false }} 
         />
         
+        {/* Écrans de résultats */}
+        <Stack.Screen 
+          name="Loading" 
+          component={LoadingScreen} 
+          options={{ headerShown: false, gestureEnabled: false }} 
+        />
+        <Stack.Screen 
+          name="Shortlist" 
+          component={ShortlistScreen} 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="ActivityDetail"
+          component={ActivityDetailScreen} 
+          options={{ headerShown: false }} 
+        />
+        
         {/* Les autres écrans seront ajoutés au fur et à mesure du développement */}
         {/* 
         <Stack.Screen name="QuestionDetails" component={QuestionDetailsScreen} />
-        <Stack.Screen name="Recommendations" component={RecommendationsScreen} />
         <Stack.Screen name="ActivityDetails" component={ActivityDetailsScreen} />
         <Stack.Screen name="RefinementQuestions" component={RefinementQuestionsScreen} />
         */}
