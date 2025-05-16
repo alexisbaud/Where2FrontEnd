@@ -430,10 +430,11 @@ const styles = StyleSheet.create({
   bottomBarTravelInfo: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-start', // Assure que les éléments sont bien alignés à gauche
   },
   bottomBarTransportIcon: {
-    width: 16, // Taille ajustée pour la bottom bar
-    height: 16, // Taille ajustée pour la bottom bar
+    width: 14, // Réduit de 16 à 14
+    height: 14, // Réduit de 16 à 14
     marginRight: spacing.xs,
   },
   bottomBarTravelText: {

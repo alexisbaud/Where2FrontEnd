@@ -66,7 +66,7 @@ const PermanenceQuestionScreen: React.FC = () => {
               
               <View style={styles.questionContainer}>
                 <QuestionText>
-                  Es-tu intéressé(e) par un événement éphémère ou une activité disponible de façon plus permanente ?
+                  Es-tu plus intéressé(e) par un événement éphémère ou une activité permanente ?
                 </QuestionText>
               </View>
             </View>

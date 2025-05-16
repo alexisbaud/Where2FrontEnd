@@ -312,11 +312,13 @@ const styles = StyleSheet.create({
   },
   carousel: {
     flex: 1,
+    zIndex: 2,
   },
   cardContainer: {
     width: width,
     alignItems: 'center',
     padding: spacing.md,
+    zIndex: 2,
   },
   cardShadow: {
     width: cardWidth,
@@ -339,7 +341,7 @@ const styles = StyleSheet.create({
   },
   activityImage: {
     width: '100%',
-    height: 300,
+    height: 320,
     borderRadius: 8,
   },
   keyInfoContainer: {
@@ -349,7 +351,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.backgroundSecondary,
     borderRadius: 8,
     paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.sm,
     justifyContent: 'space-between',
   },
   infoItem: {
@@ -357,15 +359,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: spacing.xs,
   },
   infoValue: {
     ...typography.body,
-    fontWeight: '600',
+    fontWeight: '700',
     fontSize: 15,
+    textAlign: 'center',
   },
   transportIcon: {
-    width: 22,
-    height: 22,
+    width: 16,
+    height: 16,
     marginRight: spacing.xs,
   },
   contentContainer: {
@@ -404,12 +408,16 @@ const styles = StyleSheet.create({
   },
   mascotSection: {
     flexDirection: 'row',
-    padding: spacing.sm,
     alignItems: 'center',
-    backgroundColor: 'transparent',
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md,
     paddingBottom: spacing.md,
+    zIndex: 1,
+    position: 'absolute',
+    bottom: 16,
+    left: 0,
+    right: 0,
+    opacity: 1,
+    backgroundColor: undefined,
   },
   mascot: {
     width: 80,
@@ -421,6 +429,9 @@ const styles = StyleSheet.create({
     ...typography.body,
     fontSize: 14,
     flex: 1,
+    textShadowColor: undefined,
+    textShadowOffset: undefined,
+    textShadowRadius: undefined,
   },
   closeButton: {
     position: 'absolute',

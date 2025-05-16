@@ -48,8 +48,8 @@ const ParticipantsQuestionScreen: React.FC = () => {
 
   // Formater l'affichage du nombre de participants
   const formatParticipants = (value: number): string => {
-    if (value === 1) return "1 personne";
-    if (value === 5) return "5 personnes";
+    if (value === 1) return "Je suis seul";
+    if (value === 5) return "5+ personnes";
     return `${value} personnes`;
   };
 
@@ -66,7 +66,7 @@ const ParticipantsQuestionScreen: React.FC = () => {
             
             <View style={styles.questionContainer}>
               <QuestionText>
-                Combien de personnes participeront à cette activité (toi inclus) ?
+                Combien de personnes participeront à cette activité ?
               </QuestionText>
               
               <View style={styles.sliderContainer}>

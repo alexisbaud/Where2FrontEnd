@@ -52,7 +52,7 @@ const EnvironmentQuestionScreen: React.FC = () => {
               
               <View style={styles.questionContainer}>
                 <QuestionText>
-                  As-tu une préférence pour une activité en intérieur, en extérieur, ou cela t'est-il égal ?
+                  As-tu une préférence pour une activité en intérieur ou en extérieur ?
                 </QuestionText>
               </View>
             </View>
